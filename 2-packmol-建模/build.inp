@@ -1,0 +1,24 @@
+# 文件: build_cof_bubble.inp
+tolerance 2.5              
+output cof_water_H2.pdb
+filetype pdb
+
+# 阶段1：放置COF催化剂 (假设COF尺寸在x,y方向=30Å, z=5Å)
+structure cof33.pdb
+  number 1                # 单层COF
+  fixed 0. 0. 0. 0. 0. 0. # 将COF平移到盒子底部
+end structure
+
+# 阶段2：插入H₂气泡到COF表面活性位点附近
+structure h2.pdb
+  number 60
+  inside sphere 19.358 17.54 9 8.4       # COF表面Pt中心偏上
+end structure
+
+# 阶段3：填充水（避开COF所在区域和气泡位点）
+structure h2o.pdb
+  number 1702
+  inside box  0.5  0.5 0.5  44 38 39  # 盒子边缘预留0.5
+  outside sphere 19.358 17.54 9 8.4      # 预留中心气泡区域
+end structure
+
