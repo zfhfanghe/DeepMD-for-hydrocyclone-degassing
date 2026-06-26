@@ -1,0 +1,78 @@
+{
+	"api_version": "1.0",
+	"deepmd_version": "2.2.7",
+	"train" :[
+		{
+			"command": "dp",
+			"machine": {
+				"batch_type": "Slurm",
+				"context_type": "local",
+				"local_root" : "./",
+				"remote_root": "/home/zhoufh/zfh/tq/rad/dp2/cof3/work"
+			},
+			"resources": {
+                                "number_node": 1,
+				"cpu_per_node": 13,
+				"gpu_per_node": 1,
+				"queue_name":"gpu",
+				"custom_flags":[
+
+"#SBATCH -J dp"					
+				],
+				"group_size": 1,
+				"source_list":[],
+				"module_list":["conda/deepmd-2.2.9-gpu"]
+			}
+		}
+	],
+	"model_devi":[
+		{
+			"command": "LAMMPS_PLUGIN_PATH=/opt/gengzi/pub/toolkits/conda/envs/deepmd-2.2.9-gpu/lib/deepmd_lmp lmp_mpi",
+			"machine": {
+				"batch_type": "Slurm",
+				"context_type": "local",
+				"local_root" : "./",
+				"remote_root": "/home/zhoufh/zfh/tq/rad/dp2/cof3/work"
+			},
+			"resources": {
+				"number_node": 1,
+				"cpu_per_node": 13,
+				"gpu_per_node": 1,
+				"queue_name":"gpu",
+				"custom_flags":[
+
+"#SBATCH -J lmp"
+],
+				"group_size": 1,
+				"source_list":[],
+				"module_list":["conda/deepmd-2.2.9-gpu"]
+			}
+		}
+	],
+	"fp":[
+		{
+			"command": "mpirun cp2k.psmp input.inp >output 2>cp2k.er",
+			"machine": {
+				"batch_type": "Slurm",
+				"context_type": "local",
+				"local_root" : "./",
+				"remote_root": "/home/zhoufh/zfh/tq/rad/dp2/cof3/work"
+			},
+			"resources": {
+				"number_node": 1,
+				"cpu_per_node": 64,
+				"gpu_per_node": 0,
+				"queue_name":"intel64",
+				"custom_flags":[
+"#SBATCH -n 64",
+"#SBATCH -J fp"
+
+				],
+				"group_size": 1,
+				"source_list":[],
+				"module_list":
+				["CP2K/2024.3-toolchain-plumed"]
+			}
+		}
+	]
+}

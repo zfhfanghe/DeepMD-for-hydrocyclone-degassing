@@ -1,0 +1,41 @@
+variable        NSTEPS          equal V_NSTEPS
+variable        TEMP            equal V_TEMP
+variable        PRES            equal V_PRES
+variable        THERMO_FREQ     equal 10
+variable        DUMP            equal 10
+variable        TAU_T           equal 0.100000
+variable        TAU_P           equal 0.500000
+
+units           metal
+boundary        p p p
+atom_style      atomic
+
+read_data conf.lmp
+
+mass            1 15.999400
+mass            2 14.007000
+mass            3 12.011000
+mass            4 1.008000
+mass            5 195.084000
+
+pair_style      deepmd  
+pair_coeff      * *
+
+group substrate id <= 396
+group mobile   subtract all substrate
+
+fix   freeze_substrate substrate setforce 0.0 0.0 0.0
+
+
+thermo_style    custom step temp pe ke etotal press vol lx ly lz xy xz yz
+thermo          ${THERMO_FREQ}
+
+dump dpgen_dump
+
+
+velocity       mobile create ${TEMP} 1815191 mom yes rot yes dist gaussian
+fix            dpgen_plm
+fix             1 mobile nvt temp ${TEMP} ${TEMP} 0.1
+
+timestep        0.000500
+run             ${NSTEPS}

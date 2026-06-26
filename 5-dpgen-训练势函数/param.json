@@ -1,0 +1,192 @@
+{
+     "type_map": ["O", "N", "C", "H", "Pt"],
+     "mass_map": [15.9994,14.007,12.011,1.008,195.084],
+     "init_data_prefix":"/home/zhoufh/zfh/tq/rad/dp2",
+     "init_data_sys": [
+                "traindata/tr1",
+                "traindata/tr2",
+                "traindata/tr3",
+                "traindata/tr4",
+				"traindata/tr5",
+				"traindata/tr6",
+				"traindata/tr7",
+                "iter.000000/02.fp/data.000",
+                "iter.000001/02.fp/data.001",
+                "iter.000002/02.fp/data.002",
+                "iter.000003/02.fp/data.003",
+                "iter.000004/02.fp/data.004",
+				"30/iter.000000/02.fp/data.000",
+				"30/iter.000001/02.fp/data.001",
+				"30/iter.000002/02.fp/data.002",
+				"30/iter.000003/02.fp/data.003",
+				"30/iter.000004/02.fp/data.004",
+				"30/iter.000005/02.fp/data.005"
+	 ],
+     "batch_size": "auto",
+     "sys_configs_prefix": "./",
+	 "sys_format": "lammps/lmp",
+     "sys_configs": [
+				 ["./cof3.lmp"],
+				 ["./cof3.lmp"],
+				 ["./cof3.lmp"]
+     ],
+     "_comment": " that's all ",
+     "numb_models": 4,
+     "default_training_param": {
+         "model": {
+             "type_map": ["O", "N", "C", "H", "Pt"],
+             "descriptor": {
+                 "type": "se_e2_a",
+                 "sel": "auto",
+                 "rcut_smth": 0.5,
+                 "rcut": 6.5,
+                 "neuron": [25,50,100],
+                 "resnet_dt": false,
+                 "axis_neuron": 16,
+                 "seed": 1
+             },
+             "fitting_net": {
+                 "neuron": [240,240,240],
+                 "resnet_dt": true,
+                 "seed": 1
+             }
+         },
+         "learning_rate": {
+             "type": "exp",
+		  "start_lr": 0.005, 
+          "decay_steps": 2000,
+          "_comment": "last 20000 or 400000" 
+         },
+         "loss": {
+             "start_pref_e": 0.02,
+             "limit_pref_e": 2,
+             "start_pref_f": 1000,
+             "limit_pref_f": 1,
+             "start_pref_v": 0.0,
+             "limit_pref_v": 0.0
+         },
+         "training": {
+             "stop_batch": 20000,
+             "disp_file": "lcurve.out",
+             "disp_freq": 100,
+             "numb_test": 4,
+             "save_freq": 20000,
+             "save_ckpt": "model.ckpt",
+             "disp_training": true,
+             "time_training": true,
+             "profiling": false,
+             "profiling_file": "timeline.json",
+             "_comment": "that's all"
+         }
+     },
+     "model_devi_dt": 0.0005,
+     "model_devi_skip": 0,
+     "model_devi_f_trust_lo": 1.00,
+     "model_devi_f_trust_hi": 2.00,
+     "model_devi_clean_traj": true,
+	 "model_devi_plumed": true,
+     "model_devi_jobs": [
+			{
+				"sys_idx": [0],
+				"trj_freq": 10,
+				"_idx": "01",
+				"template":{
+					"lmp": "./plumed.lammps",
+					"plm": "./plumed.dat"
+				},
+				"rev_mat": {
+					"lmp": {
+						"V_NSTEPS": [5000],
+						"V_TEMP": [300],
+						"V_PRES": [1]
+					}
+				}
+			},
+			{
+				"sys_idx": [1],
+				"trj_freq": 10,
+				"_idx": "02",
+				"template":{
+					"lmp": "./plumed.lammps",
+					"plm": "./plumed.dat"
+				},
+				"rev_mat": {
+					"lmp": {
+						"V_NSTEPS": [5000],
+						"V_TEMP": [400],
+						"V_PRES": [1]
+					}
+				}
+			},
+			{
+				"sys_idx": [2],
+				"trj_freq": 10,
+				"_idx": "03",
+				"template":{
+					"lmp": "./plumed.lammps",
+					"plm": "./plumed.dat"
+				},
+				"rev_mat": {
+					"lmp": {
+						"V_NSTEPS": [5000],
+						"V_TEMP": [500],
+						"V_PRES": [1]
+					}
+				}
+			}
+     ],
+     "fp_style": "cp2k",
+     "shuffle_poscar": false,
+     "fp_task_max": 6,
+     "fp_task_min": 2,
+     "fp_pp_path": "./",
+     "fp_pp_files": [],
+     "fp_params": {
+        "FORCE_EVAL":{
+            "DFT":{
+                "BASIS_SET_FILE_NAME": "/home/zhoufh/cp2k/data/BASIS_MOLOPT",
+                "POTENTIAL_FILE_NAME": "/home/zhoufh/cp2k/data/GTH_POTENTIALS",
+                "MGRID":{
+                    "CUTOFF": 400
+                },
+                "QS":{
+                    "EPS_DEFAULT": 1.0E-13
+                },
+                "SCF":{
+                    "SCF_GUESS": "ATOMIC",
+                    "EPS_SCF": 1.0E-5,
+                    "MAX_SCF": 500,
+                    "CHOLESKY": "INVERSE",
+					"OT": {
+						"MINIMIZER": "DIIS",
+						"PRECONDITIONER": "FULL_KINETIC",
+						"LINESEARCH": "2PNT",
+						"ALGORITHM": "STRICT"
+						}
+                },
+                "XC":{
+                        "XC_FUNCTIONAL":{"_": "PBE"},
+                        "XC_GRID":{
+                                "XC_SMOOTH_RHO": "NN50",
+                                "XC_DERIV": "NN50_SMOOTH"
+                        },
+                        "vdW_POTENTIAL":{
+                                "DISPERSION_FUNCTIONAL": "PAIR_POTENTIAL",
+                                "PAIR_POTENTIAL":{
+                                        "TYPE": "DFTD3",
+                                        "PARAMETER_FILE_NAME": "/home/zhoufh/cp2k/data/dftd3.dat",
+                                        "REFERENCE_FUNCTIONAL": "PBE"
+                                }
+                        }
+                }
+           },
+            "SUBSYS":{
+                        "KIND":{
+                                "_": ["O", "N", "C", "H", "Pt"],
+                                "POTENTIAL": ["GTH-PBE-q6", "GTH-PBE-q5", "GTH-PBE-q4", "GTH-PBE-q1", "GTH-PBE-q18"],
+                                "BASIS_SET": ["DZVP-MOLOPT-SR-GTH", "DZVP-MOLOPT-SR-GTH","DZVP-MOLOPT-SR-GTH", "DZVP-MOLOPT-SR-GTH","DZVP-MOLOPT-SR-GTH"]
+                        }
+            }
+        }
+    }
+}
