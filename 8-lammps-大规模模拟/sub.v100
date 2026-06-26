@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p volta          # V100 GPU 队列（vn01, 8x Tesla V100 16GB）
+#SBATCH --gpus=2          # 申请 GPU 数量, 每块 GPU 自动配套 3 核 CPU + 20GB 内存
+#SBATCH --qos=long      # 时长档位: short=12小时(默认,优先级高) medium=3天 long=7天
+
+module load anaconda3
+conda activate deepmd-2.2.9-gpu
+export OMP_NUM_THREADS=6
+
+#module load intel-psxe
+#export OMP_NUM_THREADS=64
+nvidia-smi
+LAMMPS_PLUGIN_PATH=/opt/gengzi/pub/toolkits/conda/envs/deepmd-2.2.9-gpu/lib/deepmd_lmp lmp_mpi < shear.lammps >lmp.out 2>lmp.err
+
+#mpirun lmp -sf gpu -pk gpu 1 -in in.rigid >lmp.out 2>lmp.err
+
+
+
+

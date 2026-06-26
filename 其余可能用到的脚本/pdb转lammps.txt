@@ -1,0 +1,11 @@
+set selO  [atomselect top "element O"]
+set selN  [atomselect top "element N"]
+set selC  [atomselect top "element C"]
+set selH  [atomselect top "element H"]
+set selPt [atomselect top "element Pt"]
+$selO  set type 1                         
+$selN  set type 2                    
+$selC  set type 3                    
+$selH  set type 4           
+$selPt set type 5   
+topo writelammpsdata h50.lmp atomic 

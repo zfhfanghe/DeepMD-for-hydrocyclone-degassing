@@ -1,0 +1,66 @@
+variable        TEMP            equal 300           # 温度 (K)
+variable        THERMO_FREQ     equal 100           # 热力学信息输出频率
+variable        DUMP_FREQ       equal 100           # Dump文件输出频率
+
+variable        TAU_T           equal 0.1           # NVT控温器的弛豫时间 (ps)
+
+variable        EQUI_STEPS      equal 3000         # 平衡步数 (1 ps)
+variable        NEMD_STEPS      equal 300000        # NEMD剪切模拟步数 
+
+# =================== INITIALIZATION ===================
+units           metal
+boundary        p p p
+atom_style      atomic
+
+read_data       h50.lmp
+
+mass            1 15.999400  # O
+mass            2 14.007000  # N
+mass            3 12.011000  # C
+mass            4 1.008000   # H
+mass            5 195.084000 # Pt 
+
+pair_style      deepmd ./frozen_model.pb
+pair_coeff      * *
+
+# =================== 原子组定义 ===================
+group           substrate id <= 792        # COF基底（固定）
+group           mobile    subtract all substrate
+group           water     id >= 893        # 水分子
+group           h2        id 793:892       # 氢气分子
+
+# =================== 分层定义 ===================
+region          near_substrate block INF INF INF INF 8.0 10.0      
+region          middle_region block INF INF INF INF 10.0 38.0       
+region          top_region block INF INF INF INF 38.0 40.0         
+
+group           near_fluid dynamic water region near_substrate every 10
+group           middle_fluid dynamic water region middle_region every 10  
+group           top_fluid dynamic water region top_region every 10
+
+# =================== 第一阶段：平衡 ===================
+fix             freeze_substrate substrate setforce 0.0 0.0 0.0
+fix             nvt_mobile mobile nvt temp ${TEMP} ${TEMP} ${TAU_T}
+fix             myplumed all plumed plumedfile input.plumed outfile output.plumed
+
+dump            equi_monitor all atom 100 shear.lammpstrj
+dump_modify     equi_monitor sort id
+
+compute         mobile_temp mobile temp
+thermo_modify   temp mobile_temp
+run             ${EQUI_STEPS}
+
+# =================== 第二阶段：建立剪切 ===================
+
+fix             shear_drive middle_fluid addforce 0.001 0.0 0.0
+
+print           "Building shear flow..."
+run             2000
+
+# =================== 第三阶段：稳态分析 ===================
+# 添加分析计算
+compute         z_chunks mobile chunk/atom bin/1d z 0.0 0.2 units box
+fix             velocity_profile mobile ave/chunk 5 200 1000 z_chunks vx file velocity.dat
+
+# =================== 运行剪切流模拟 ===================
+run             ${NEMD_STEPS}

@@ -1,0 +1,22 @@
+RESTART
+# ==================== 第一部分：气泡结构约束（保持原有半径约束） ====================
+hc: CENTER ATOMS=397-436     # H₂质心（索引需准确）
+dists: DISTANCES GROUPA=hc GROUPB=397-436   NOPBC HIGHEST LOWMEM
+uwall: UPPER_WALLS ARG=dists.highest AT=0.58 KAPPA=5000.0   # 维持气泡紧凑性
+
+# ==================== 第二部分：驱动脱离的元动力学（新增Z方向） ====================
+# 定义气泡质心坐标（X、Y控制迁移，Z控制脱离表面）
+p: POSITION ATOM=hc NOPBC
+
+MOVINGRESTRAINT ...
+  LABEL=pull
+  ARG=p.z
+   STEP0=1000 AT0=1.66 KAPPA0=3000.0
+   STEP1=1500 AT1=2.16 KAPPA1=3000.0
+   STEP2=2000 AT2=2.16
+... MOVINGRESTRAINT
+# 三维元动力学设置（X/Y/Z三自由度驱动）
+
+# ==================== 输出监控 ====================
+PRINT ARG=dists.highest,p.z,pull.bias STRIDE=1 FILE=COLVAR
+FLUSH STRIDE=1
